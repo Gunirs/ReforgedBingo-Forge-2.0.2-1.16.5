@@ -1,0 +1,64 @@
+buildscript {
+    repositories {
+        maven { 
+			url = 'https://maven.minecraftforge.net' 
+		}
+        mavenCentral()
+    }
+	
+    dependencies {
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
+    }
+}
+
+apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'eclipse'
+
+repositories {
+    flatDir {
+        dirs 'lib'
+    }
+}
+
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+version = 'Forge-2.0.2-1.16.5'
+group = 'com.envyful.reforged.bingo.forge'
+archivesBaseName = 'ReforgedBingo'
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(8)
+
+println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
+
+minecraft {
+    mappings channel: 'official', version: '1.16.5'
+    //accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
+}
+
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+dependencies {
+    minecraft 'net.minecraftforge:forge:1.16.5-36.2.39'
+
+    implementation name: 'EventHelper-1.16.5-3.0.0-dev'
+	implementation name: 'Pixelmon-1.16.5-9.1.3-dev'
+    implementation name: archivesBaseName + '-' + version + '-dev'
+
+    // compile "some.group:artifact:version:classifier"
+    // compile "some.group:artifact:version"
+}
+
+jar.finalizedBy('reobfJar')
+
+jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from zipTree('lib/' + archivesBaseName + '-' + version + '.jar')
+    archiveFileName.set(archivesBaseName + '-' + version + '-FakePlayers.jar')
+}
+
+task copyJarToBin(type: Copy) {
+    from 'build/libs/' + archivesBaseName + '-' + version + '-FakePlayers.jar'
+    into '../dist/'
+}
+
+build.finalizedBy('copyJarToBin')
